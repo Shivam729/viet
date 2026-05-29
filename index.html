@@ -990,6 +990,35 @@
     .hero-content { padding: 60px 24px; }
   }
 
+  /* ── MUSIC BUTTON ── */
+  #music-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  }
+  #music-btn:hover { background: var(--red); border-color: var(--red); }
+  #music-btn.playing { border-color: var(--red); }
+  #music-btn.playing .note-icon { animation: noteSpin 1.2s linear infinite; }
+  @keyframes noteSpin {
+    0%   { transform: scale(1) rotate(0deg); }
+    50%  { transform: scale(1.15) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
   /* ── COUNTDOWN ── */
   .hero-countdown {
     display: flex;
@@ -3165,5 +3194,119 @@
   });
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<button id="music-btn" title="Toggle Africa by Toto"><span class="note-icon">♪</span></button>
+
+<script>
+(function() {
+  const BPM = 93;
+  const Q = 60 / BPM; // quarter note in seconds
+
+  // Africa by Toto — opening marimba/keyboard melody
+  // [frequency_hz, duration_in_quarter_beats]
+  const melody = [
+    [740, 0.75], [587, 0.75], [494, 0.75], [440, 0.5],  // F#5 D5 B4 A4
+    [494, 0.5],  [587, 0.75], [740, 0.75], [831, 0.75], // B4 D5 F#5 G#5
+    [740, 0.75], [659, 0.75], [587, 0.75], [494, 0.5],  // F#5 E5 D5 B4
+    [440, 1.5],  [0,   0.5],                              // A4 (hold) rest
+
+    [587, 0.75], [494, 0.75], [440, 0.75], [370, 0.5],  // D5 B4 A4 F#4
+    [440, 0.5],  [494, 0.75], [587, 0.75], [659, 0.75], // A4 B4 D5 E5
+    [740, 0.75], [659, 0.75], [587, 0.75], [494, 0.5],  // F#5 E5 D5 B4
+    [440, 1.5],  [0,   0.5],                              // A4 (hold) rest
+  ];
+
+  let ctx = null;
+  let playing = false;
+  let loopTimeout = null;
+  let masterGain = null;
+  let startTime = 0;
+
+  function getCtx() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.5;
+      masterGain.connect(ctx.destination);
+    }
+    return ctx;
+  }
+
+  function playNote(freq, when, dur) {
+    if (freq === 0) return;
+    const ac = getCtx();
+    const osc  = ac.createOscillator();
+    const gain = ac.createGain();
+
+    // Marimba-like: sine fundamental + quiet octave-up for brightness
+    const osc2  = ac.createOscillator();
+    const gain2 = ac.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 2;
+    gain2.gain.value = 0.12;
+    osc2.connect(gain2);
+    gain2.connect(masterGain);
+
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    const attack = 0.008;
+    const decay  = dur * Q * 0.55;
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(0.45, when + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + attack + decay);
+
+    gain2.gain.setValueAtTime(0.12, when);
+    gain2.gain.exponentialRampToValueAtTime(0.001, when + attack + decay * 0.7);
+
+    osc.start(when);  osc.stop(when + attack + decay + 0.05);
+    osc2.start(when); osc2.stop(when + attack + decay * 0.7 + 0.05);
+  }
+
+  function scheduleMelody(fromTime) {
+    let t = fromTime;
+    melody.forEach(([freq, dur]) => {
+      playNote(freq, t, dur);
+      t += dur * Q;
+    });
+    return t;
+  }
+
+  function startMusic() {
+    const ac = getCtx();
+    if (ac.state === 'suspended') ac.resume();
+    playing = true;
+    document.getElementById('music-btn').classList.add('playing');
+    let next = ac.currentTime + 0.05;
+    function loop() {
+      next = scheduleMelody(next);
+      const delay = (next - ac.currentTime - 0.5) * 1000;
+      loopTimeout = setTimeout(loop, Math.max(delay, 100));
+    }
+    loop();
+  }
+
+  function stopMusic() {
+    playing = false;
+    clearTimeout(loopTimeout);
+    document.getElementById('music-btn').classList.remove('playing');
+    if (masterGain) {
+      masterGain.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
+      setTimeout(() => {
+        ctx.close();
+        ctx = null;
+        masterGain = null;
+      }, 800);
+    }
+  }
+
+  document.getElementById('music-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (playing) { stopMusic(); } else { startMusic(); }
+  });
+})();
+</script>
 </body>
 </html>
