@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vietnam 2026 — Grad Trip Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   :root {
     --red: #E8341A;
@@ -989,6 +990,74 @@
     .hero-content { padding: 60px 24px; }
   }
 
+  /* ── COUNTDOWN ── */
+  .hero-countdown {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+  .cd-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .cd-num {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(22px, 3.5vw, 40px);
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+  .cd-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cd-sep {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(18px, 3vw, 32px);
+    color: var(--red);
+    margin-bottom: 14px;
+    opacity: 0.7;
+  }
+  .cd-gone {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    margin-top: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+
+  /* ── ROUTE MAP ── */
+  #route { padding: 80px 60px; }
+  #trip-map {
+    height: 420px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-top: 32px;
+    overflow: hidden;
+  }
+  .leaflet-popup-content-wrapper {
+    background: var(--card2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    color: var(--text) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  }
+  .leaflet-popup-tip { background: var(--card2) !important; }
+  .leaflet-popup-content { margin: 10px 14px !important; }
+  .map-popup-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .map-popup-sub { font-size: 11px; color: var(--muted); }
+  @media (max-width: 768px) { #route { padding: 60px 24px; } #trip-map { height: 320px; } }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -1060,6 +1129,15 @@
         <span class="value">S$1,500 / pax</span>
       </div>
     </div>
+    <div id="hero-countdown" class="hero-countdown">
+      <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-label">Days</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-hrs">--</span><span class="cd-label">Hrs</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-min">--</span><span class="cd-label">Min</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-unit"><span class="cd-num" id="cd-sec">--</span><span class="cd-label">Sec</span></div>
+    </div>
     <div class="hero-scroll">Scroll to explore</div>
   </div>
 
@@ -1082,6 +1160,7 @@
 <nav>
   <a class="nav-item active" onclick="scrollTo('flights')">Flights</a>
   <a class="nav-item" onclick="scrollTo('itinerary')">Itinerary</a>
+  <a class="nav-item" onclick="scrollTo('route')">Route</a>
   <a class="nav-item" onclick="scrollTo('budget')">Budget</a>
   <a class="nav-item" onclick="scrollTo('bookings')">Bookings</a>
   <a class="nav-item" onclick="scrollTo('packing')">Packing</a>
@@ -2037,6 +2116,13 @@
 
 </section>
 
+<!-- ROUTE MAP -->
+<section id="route">
+  <div class="section-label">5 Jun → 15 Jun 2026</div>
+  <h2>Route</h2>
+  <div id="trip-map"></div>
+</section>
+
 <!-- BUDGET -->
 <section id="budget">
   <div class="section-label">Per Person · S$1,500 Total</div>
@@ -2912,10 +2998,48 @@
   }
 
   // Toggle booking status
+  // ── localStorage persistence ──
+  const LS_KEY = 'viet2026_state';
+
+  function saveState() {
+    const state = { bookings: [], checks: [] };
+    document.querySelectorAll('.booking-status').forEach((el, i) => {
+      state.bookings[i] = el.classList.contains('checked');
+    });
+    document.querySelectorAll('.cl-item[onclick]').forEach((el, i) => {
+      state.checks[i] = el.classList.contains('done');
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    try {
+      const state = JSON.parse(localStorage.getItem(LS_KEY));
+      if (!state) return;
+      document.querySelectorAll('.booking-status').forEach((el, i) => {
+        if (state.bookings[i]) { el.classList.add('checked'); el.textContent = '✓'; }
+      });
+      document.querySelectorAll('.cl-item[onclick]').forEach((el, i) => {
+        if (state.checks[i]) {
+          el.classList.add('done');
+          const chk = el.querySelector('.cl-check');
+          if (chk) chk.textContent = '✓';
+        }
+      });
+      document.querySelectorAll('.cl-item[onclick]').forEach(el => {
+        const match = el.getAttribute('onclick').match(/'([^']+)'/g);
+        if (match && match[1]) updateCounter(match[1].replace(/'/g,''));
+      });
+      updateBookingProgress();
+      updateOverallProgress();
+    } catch(e) {}
+  }
+
   function toggleBooking(btn) {
     btn.classList.toggle('checked');
     btn.textContent = btn.classList.contains('checked') ? '✓' : '';
     updateBookingProgress();
+    saveState();
   }
 
   function updateBookingProgress() {
@@ -2933,6 +3057,7 @@
     item.querySelector('.cl-check').textContent = item.classList.contains('done') ? '✓' : '';
     updateCounter(section);
     updateOverallProgress();
+    saveState();
   }
 
   function updateCounter(section) {
@@ -2970,7 +3095,7 @@
   setInterval(() => goSlide((slideIdx + 1) % slides.length), 5000);
 
   // Nav active state on scroll
-  const sections = ['flights','itinerary','food','budget','bookings','packing','checklist','cash','tips'];
+  const sections = ['flights','itinerary','route','budget','bookings','packing','checklist','cash','tips'];
   const navItems = document.querySelectorAll('.nav-item');
 
   window.addEventListener('scroll', () => {
@@ -2983,6 +3108,62 @@
       item.classList.toggle('active', sections[i] === current);
     });
   });
+
+  // ── Countdown Timer ──
+  (function() {
+    const target = new Date('2026-06-05T14:55:00+08:00').getTime();
+    const cdEl = document.getElementById('hero-countdown');
+    function pad(n) { return String(n).padStart(2,'0'); }
+    function tick() {
+      const now = Date.now();
+      const diff = target - now;
+      if (diff <= 0) {
+        cdEl.innerHTML = '<span class="cd-gone">✈ WE ARE IN VIETNAM</span>';
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('cd-days').textContent = pad(d);
+      document.getElementById('cd-hrs').textContent  = pad(h);
+      document.getElementById('cd-min').textContent  = pad(m);
+      document.getElementById('cd-sec').textContent  = pad(s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  // ── Leaflet Route Map ──
+  document.addEventListener('DOMContentLoaded', function() {
+    loadState();
+
+    const map = L.map('trip-map', { zoomControl: true, scrollWheelZoom: false }).setView([20.5, 104.5], 6);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+
+    const stops = [
+      { latlng: [1.3521, 103.8198],  day: 'D1',  name: 'Singapore', sub: 'Depart 5 Jun · SQ/VJ flight' },
+      { latlng: [20.0505, 105.8412], day: 'D1–2', name: 'Ninh Binh', sub: 'Tam Coc · Hang Mua · 2 nights' },
+      { latlng: [20.6441, 104.9898], day: 'D3',   name: 'Pu Luong', sub: 'Jungle homestay · 1 night' },
+      { latlng: [21.0245, 105.8412], day: 'D4–5', name: 'Hanoi', sub: 'Old Quarter · transfer hub · 2 nights' },
+      { latlng: [20.9101, 107.1839], day: 'D6–7', name: 'Ha Long / Cat Ba', sub: 'Cruise · kayak · 2 nights' },
+      { latlng: [22.3364, 103.8438], day: 'D8–11',name: 'Sapa', sub: 'Fansipan summit · 3 nights' },
+    ];
+
+    const red = L.divIcon({ className: '', html: `<div style="width:12px;height:12px;border-radius:50%;background:#E8341A;border:2px solid #fff;box-shadow:0 0 6px rgba(232,52,26,0.7)"></div>`, iconSize:[12,12], iconAnchor:[6,6] });
+
+    stops.forEach(s => {
+      L.marker(s.latlng, { icon: red }).addTo(map)
+        .bindPopup(`<div class="map-popup-title">${s.day} · ${s.name}</div><div class="map-popup-sub">${s.sub}</div>`);
+    });
+
+    const route = stops.map(s => s.latlng);
+    L.polyline(route, { color: '#E8341A', weight: 2, opacity: 0.7, dashArray: '6 8' }).addTo(map);
+  });
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
