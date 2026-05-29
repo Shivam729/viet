@@ -1187,14 +1187,14 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-item active" onclick="scrollTo('flights')">Flights</a>
-  <a class="nav-item" onclick="scrollTo('itinerary')">Itinerary</a>
-  <a class="nav-item" onclick="scrollTo('route')">Route</a>
-  <a class="nav-item" onclick="scrollTo('budget')">Budget</a>
-  <a class="nav-item" onclick="scrollTo('bookings')">Bookings</a>
-  <a class="nav-item" onclick="scrollTo('packing')">Packing</a>
-  <a class="nav-item" onclick="scrollTo('checklist')">Checklist</a>
-  <a class="nav-item" onclick="scrollTo('cash')">Cash Guide</a><a class="nav-item" onclick="scrollTo('tips')">Tips</a>
+  <a class="nav-item active" onclick="navTo('flights')">Flights</a>
+  <a class="nav-item" onclick="navTo('itinerary')">Itinerary</a>
+  <a class="nav-item" onclick="navTo('route')">Route</a>
+  <a class="nav-item" onclick="navTo('budget')">Budget</a>
+  <a class="nav-item" onclick="navTo('bookings')">Bookings</a>
+  <a class="nav-item" onclick="navTo('packing')">Packing</a>
+  <a class="nav-item" onclick="navTo('checklist')">Checklist</a>
+  <a class="nav-item" onclick="navTo('cash')">Cash Guide</a><a class="nav-item" onclick="navTo('tips')">Tips</a>
 </nav>
 
 <!-- FLIGHTS -->
@@ -3004,7 +3004,7 @@
 
 <script>
   // Nav scroll
-  function scrollTo(id) {
+  function navTo(id) {
     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
   }
 
