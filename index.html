@@ -607,17 +607,22 @@
   }
 
   /* ── DAILY BUDGET TABLE ── */
-  .daily-budget {
-    background: var(--card);
+  .daily-budget-wrap {
+    overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: 2px;
-    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .daily-budget {
+    background: var(--card);
+    min-width: 820px;
   }
 
   .db-row {
     display: grid;
-    grid-template-columns: 80px 1fr repeat(5, 70px) 80px;
-    padding: 12px 24px;
+    grid-template-columns: 64px 90px 210px 80px 62px 200px 78px;
+    padding: 12px 20px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
     align-items: center;
@@ -632,7 +637,7 @@
     text-transform: uppercase;
     color: var(--muted);
     background: var(--card2);
-    padding: 14px 24px;
+    padding: 12px 20px;
   }
 
   .db-row.total-row {
@@ -644,19 +649,22 @@
   .db-row .day-num {
     font-family: 'DM Mono', monospace;
     color: var(--muted);
+    font-size: 11px;
   }
 
   .db-row .day-loc {
     color: var(--text);
     font-weight: 500;
+    font-size: 12px;
   }
 
   .db-row .cost-cell {
-    text-align: right;
     font-family: 'DM Mono', monospace;
     color: var(--muted);
     font-size: 12px;
   }
+
+  .db-row .cost-cell.num { text-align: right; }
 
   .db-row .total-cell {
     text-align: right;
@@ -665,6 +673,12 @@
     font-size: 13px;
     font-weight: 500;
   }
+
+  .db-cell { display: flex; flex-direction: column; gap: 2px; }
+  .db-cell-label { font-size: 11px; color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.3; }
+  .db-cell-link { font-size: 10px; color: var(--gold); text-decoration: none; opacity: 0.8; }
+  .db-cell-link:hover { opacity: 1; text-decoration: underline; }
+  .db-cell-amt { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 1px; }
 
   /* ── BOOKINGS ── */
   .booking-list {
@@ -1002,8 +1016,7 @@
     .hero-days { display: none; }
     .flight-banner { grid-template-columns: 1fr; gap: 24px; }
     .flight-end.right { text-align: left; }
-    .db-row { grid-template-columns: 52px 1fr 64px; }
-    .db-row .cost-cell { display: none; }
+    .daily-budget-wrap { margin: 0 -24px; border-radius: 0; border-left: none; border-right: none; }
     .booking-item { grid-template-columns: auto 1fr auto; }
     .booking-cost { display: none; }
   }
@@ -2079,124 +2092,257 @@
   </div>
 
   <!-- Daily breakdown -->
+  <div class="daily-budget-wrap">
   <div class="daily-budget">
     <div class="db-row header">
       <div>Day</div>
       <div>Location</div>
-      <div class="cost-cell">Accom</div>
-      <div class="cost-cell">Activities</div>
-      <div class="cost-cell">Food</div>
-      <div class="cost-cell">Transport</div>
-      <div class="total-cell">Daily Total</div>
+      <div>Accommodation</div>
+      <div class="num">Activities</div>
+      <div class="num">Food</div>
+      <div>Transport</div>
+      <div class="num">Total</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D1 · 5 Jun</div>
       <div class="day-loc">HAN → Ninh Binh</div>
-      <div class="cost-cell">S$20</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$8</div>
-      <div class="cost-cell">S$19</div>
-      <div class="total-cell">S$47</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Trang An Valley Homestay</span>
+          <a href="https://airbnb.com/rooms/29865473" target="_blank" class="db-cell-link">airbnb.com/rooms/29865473 ↗</a>
+          <span class="db-cell-amt">S$18</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$0</div>
+      <div class="cost-cell num">S$8</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Grab airport → My Dinh + sleeper bus</span>
+          <span class="db-cell-amt">S$19</span>
+        </div>
+      </div>
+      <div class="total-cell">S$45</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D2 · 6 Jun</div>
       <div class="day-loc">Ninh Binh</div>
-      <div class="cost-cell">S$20</div>
-      <div class="cost-cell">S$16</div>
-      <div class="cost-cell">S$15</div>
-      <div class="cost-cell">S$5</div>
-      <div class="total-cell">S$56</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Trang An Valley Homestay</span>
+          <a href="https://airbnb.com/rooms/29865473" target="_blank" class="db-cell-link">airbnb.com/rooms/29865473 ↗</a>
+          <span class="db-cell-amt">S$18</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$15</div>
+      <div class="cost-cell num">S$15</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Scooter rental (full day)</span>
+          <span class="db-cell-amt">S$5</span>
+        </div>
+      </div>
+      <div class="total-cell">S$53</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D3 · 7 Jun</div>
       <div class="day-loc">Pu Luong</div>
-      <div class="cost-cell">S$20</div>
-      <div class="cost-cell">S$11</div>
-      <div class="cost-cell">S$10</div>
-      <div class="cost-cell">S$4</div>
-      <div class="total-cell">S$45</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Pu Luong Eco Bungalow</span>
+          <a href="https://airbnb.com/rooms/938898399474104775" target="_blank" class="db-cell-link">airbnb.com/rooms/938898… ↗</a>
+          <span class="db-cell-amt">S$30</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$8</div>
+      <div class="cost-cell num">S$10</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Private taxi Ninh Binh → Pu Luong</span>
+          <span class="db-cell-amt">S$6</span>
+        </div>
+      </div>
+      <div class="total-cell">S$54</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D4 · 8 Jun</div>
       <div class="day-loc">Pu Luong → Hanoi</div>
-      <div class="cost-cell">S$25</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$22</div>
-      <div class="cost-cell">S$5</div>
-      <div class="total-cell">S$52</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Old Quarter Apartment</span>
+          <a href="https://airbnb.com/rooms/1210464688009601768" target="_blank" class="db-cell-link">airbnb.com/rooms/1210464… ↗</a>
+          <span class="db-cell-amt">S$12</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$0</div>
+      <div class="cost-cell num">S$22</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Bus Pu Luong → Hanoi + Grab</span>
+          <span class="db-cell-amt">S$10</span>
+        </div>
+      </div>
+      <div class="total-cell">S$44</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D5 · 9 Jun</div>
       <div class="day-loc">Hanoi</div>
-      <div class="cost-cell">S$25</div>
-      <div class="cost-cell">S$5</div>
-      <div class="cost-cell">S$20</div>
-      <div class="cost-cell">S$8</div>
-      <div class="total-cell">S$58</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Old Quarter Apartment</span>
+          <a href="https://airbnb.com/rooms/1210464688009601768" target="_blank" class="db-cell-link">airbnb.com/rooms/1210464… ↗</a>
+          <span class="db-cell-amt">S$12</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$5</div>
+      <div class="cost-cell num">S$20</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Grab around Old Quarter</span>
+          <span class="db-cell-amt">S$10</span>
+        </div>
+      </div>
+      <div class="total-cell">S$47</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D6 · 10 Jun</div>
       <div class="day-loc">Ha Long Bay</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$192</div>
-      <div class="cost-cell">S$8</div>
-      <div class="cost-cell">S$10</div>
-      <div class="total-cell">S$210</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Included in Cat Ba Ventures cruise</span>
+          <span class="db-cell-amt">S$0</span>
+        </div>
+      </div>
+      <div class="cost-cell num" style="color:var(--text)">S$192</div>
+      <div class="cost-cell num">S$8</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Minibus Hanoi → Cat Ba + ferry</span>
+          <span class="db-cell-amt">S$5</span>
+        </div>
+      </div>
+      <div class="total-cell">S$205</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D7 · 11 Jun</div>
-      <div class="day-loc">Ha Long → Hanoi</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$18</div>
-      <div class="cost-cell">S$12</div>
-      <div class="cost-cell">S$27</div>
-      <div class="total-cell">S$57</div>
+      <div class="day-loc">Cat Ba → Sapa</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">VIP Overnight Sleeper Bus</span>
+          <a href="https://baolau.com" target="_blank" class="db-cell-link">baolau.com ↗</a>
+          <span class="db-cell-amt">S$30</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$14</div>
+      <div class="cost-cell num">S$12</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Local taxi to bus terminal</span>
+          <span class="db-cell-amt">S$5</span>
+        </div>
+      </div>
+      <div class="total-cell">S$61</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D8 · 12 Jun</div>
       <div class="day-loc">Arrive Sapa</div>
-      <div class="cost-cell">S$22</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$18</div>
-      <div class="cost-cell">S$3</div>
-      <div class="total-cell">S$43</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Sapa Mountain Villa</span>
+          <a href="https://airbnb.com/rooms/639359705120990931" target="_blank" class="db-cell-link">airbnb.com/rooms/639359… ↗</a>
+          <span class="db-cell-amt">S$21</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$0</div>
+      <div class="cost-cell num">S$18</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Taxi from bus stop to villa</span>
+          <span class="db-cell-amt">S$10</span>
+        </div>
+      </div>
+      <div class="total-cell">S$49</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D9 · 13 Jun</div>
       <div class="day-loc">Fansipan Trek</div>
-      <div class="cost-cell">S$22</div>
-      <div class="cost-cell">S$117</div>
-      <div class="cost-cell">S$15</div>
-      <div class="cost-cell">S$0</div>
-      <div class="total-cell">S$154</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Sapa Mountain Villa</span>
+          <a href="https://airbnb.com/rooms/639359705120990931" target="_blank" class="db-cell-link">airbnb.com/rooms/639359… ↗</a>
+          <span class="db-cell-amt">S$21</span>
+        </div>
+      </div>
+      <div class="cost-cell num" style="color:var(--text)">S$110</div>
+      <div class="cost-cell num">S$15</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Car to Tram Ton Pass (05:30)</span>
+          <span class="db-cell-amt">S$10</span>
+        </div>
+      </div>
+      <div class="total-cell">S$156</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D10 · 14 Jun</div>
       <div class="day-loc">Sapa + Overnight</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$9</div>
-      <div class="cost-cell">S$22</div>
-      <div class="cost-cell">S$17</div>
-      <div class="total-cell">S$48</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">VIP Overnight Sleeper Bus</span>
+          <a href="https://baolau.com" target="_blank" class="db-cell-link">baolau.com ↗</a>
+          <span class="db-cell-amt">S$17</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$5</div>
+      <div class="cost-cell num">S$22</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Taxi to Rong May Glass Bridge + return</span>
+          <span class="db-cell-amt">S$14</span>
+        </div>
+      </div>
+      <div class="total-cell">S$58</div>
     </div>
+
     <div class="db-row">
       <div class="day-num">D11 · 15 Jun</div>
       <div class="day-loc">Hanoi → SIN</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$0</div>
-      <div class="cost-cell">S$5</div>
-      <div class="cost-cell">S$10</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">—</span>
+          <span class="db-cell-amt">S$0</span>
+        </div>
+      </div>
+      <div class="cost-cell num">S$0</div>
+      <div class="cost-cell num">S$5</div>
+      <div class="cost-cell">
+        <div class="db-cell">
+          <span class="db-cell-label">Grab → Noi Bai Airport (04:00)</span>
+          <span class="db-cell-amt">S$10</span>
+        </div>
+      </div>
       <div class="total-cell">S$15</div>
     </div>
+
     <div class="db-row total-row">
       <div class="day-num" style="color:var(--text);font-weight:600">TOTAL</div>
-      <div class="day-loc" style="color:var(--muted);font-size:12px">excl. shopping + emergency</div>
-      <div class="cost-cell" style="color:var(--text)">S$154</div>
-      <div class="cost-cell" style="color:var(--text)">S$368</div>
-      <div class="cost-cell" style="color:var(--text)">S$155</div>
-      <div class="cost-cell" style="color:var(--text)">S$108</div>
-      <div class="total-cell" style="color:var(--gold);font-size:15px">S$785</div>
+      <div class="day-loc" style="color:var(--muted);font-size:11px">excl. misc · shopping · emergency</div>
+      <div class="cost-cell num" style="color:var(--text);text-align:right">S$179</div>
+      <div class="cost-cell num" style="color:var(--text)">S$349</div>
+      <div class="cost-cell num" style="color:var(--text)">S$155</div>
+      <div class="cost-cell num" style="color:var(--text);text-align:right">S$104</div>
+      <div class="total-cell" style="color:var(--gold);font-size:15px">S$787</div>
     </div>
+  </div>
   </div>
 </section>
 
