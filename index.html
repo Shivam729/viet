@@ -3224,18 +3224,33 @@
     });
   };
 
+  function startPlay() {
+    if (!ready || playing) return;
+    player.playVideo();
+    playing = true;
+    document.getElementById('music-btn').classList.add('playing');
+  }
+
+  function stopPlay() {
+    if (!ready || !playing) return;
+    player.pauseVideo();
+    playing = false;
+    document.getElementById('music-btn').classList.remove('playing');
+  }
+
+  // Start on first touch anywhere (mobile) or first click anywhere (desktop)
+  document.addEventListener('touchstart', function() { startPlay(); }, { once: true, passive: true });
+  document.addEventListener('click', function() { startPlay(); }, { once: true });
+
+  // Button toggles play/pause
   document.getElementById('music-btn').addEventListener('click', function(e) {
     e.stopPropagation();
-    if (!ready) return;
-    if (playing) {
-      player.pauseVideo();
-      playing = false;
-      document.getElementById('music-btn').classList.remove('playing');
-    } else {
-      player.playVideo();
-      playing = true;
-      document.getElementById('music-btn').classList.add('playing');
-    }
+    if (playing) { stopPlay(); } else { startPlay(); }
+  });
+  document.getElementById('music-btn').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (playing) { stopPlay(); } else { startPlay(); }
   });
 })();
 </script>
